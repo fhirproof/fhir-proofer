@@ -19,7 +19,7 @@
         <exec-maven-plugin.version>1.6.0</exec-maven-plugin.version>
         <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
         <source-plugin.version>3.2.1</source-plugin.version>
-        <junit.version>4.13</junit.version>
+        <junit.version>4.13.1</junit.version>
         <hapi.fhir.version>5.0.1</hapi.fhir.version>
         <apache.commons.lang3>3.11</apache.commons.lang3>
     </properties>
