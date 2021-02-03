@@ -5,7 +5,7 @@
 
     <groupId>org.fhirproof</groupId>
     <artifactId>fhir-proofer</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.0-SNAPSHOT</version>
 
     <name>fhir-proofer</name>
     <description>FHIR Proofer aims to provide a simple way to test or proofing out interacting with a FHIR store. The FHIR Proof store's goal is to be as FHIR compliant as possible while still remaining a slim product.</description>
