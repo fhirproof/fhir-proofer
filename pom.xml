@@ -5,12 +5,26 @@
 
     <groupId>org.fhirproof</groupId>
     <artifactId>fhir-proofer</artifactId>
-    <version>0.1.1-SNAPSHOT</version>
+    <version>0.1.0-SNAPSHOT</version>
 
     <name>fhir-proofer</name>
-    <description>A simple fhir-proofer.</description>
-    <!-- FIXME change it to the project's website -->
-    <url>http://www.example.com</url>
+    <description>FHIR Proofer aims to provide a simple way to test or proofing out interacting with a FHIR store. The FHIR Proof store's goal is to be as FHIR compliant as possible while still remaining a slim product.</description>
+    <url>https://github.com/fhirproof/fhir-proofer</url>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>JulieWinters</id>
+            <name>Julie Winters</name>
+            <organization>Mayo Clinic</organization>
+        </developer>
+    </developers>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
