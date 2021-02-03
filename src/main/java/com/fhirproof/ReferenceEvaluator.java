@@ -8,6 +8,9 @@ import org.hl7.fhir.r4.model.Reference;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Search evaluator for reference parameters
+ */
 public class ReferenceEvaluator extends BaseEvaluator {
 
     protected static final String PARAM_TYPE = "reference";

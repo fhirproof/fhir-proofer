@@ -298,6 +298,44 @@ public class FhirStoreTransactionTests {
     }
 
     @Test
+    public void testUpdateTransaction() throws IOException, FhirProofException {
+        FhirProofStore store = TestFhirStore.getFhirStoreCopy();
+        String photo = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
+        Patient updatedPat =
+                ((Patient) store.read("Patient", TestFhirStore.ID_PAT_9090909)).addPhoto(new Attachment().setData(photo.getBytes()));
+
+        Bundle trans = new Bundle().setType(Bundle.BundleType.TRANSACTION);
+        Bundle.BundleEntryRequestComponent update =
+                new Bundle.BundleEntryRequestComponent().setUrl(
+                        "Patient/" + TestFhirStore.ID_PAT_9090909).setMethod(Bundle.HTTPVerb.PUT);
+        trans.addEntry().setRequest(update).setResource(updatedPat);
+
+
+        Bundle response = store.executeTransaction(trans);
+        assertNotNull("Transaction response exists", response);
+        assertEquals("One transaction response", 1, response.getEntry().size());
+
+        Bundle.BundleEntryComponent entry = response.getEntry().get(0);
+        String[] parts = entry.getResponse().getLocation().split("/");
+        String id = parts[parts.length - 1];
+        Patient storePat = (Patient)store.store().get("Patient").get(id);
+
+        assertTrue("Transaction entry has response", entry.hasResponse());
+        Bundle.BundleEntryResponseComponent entryResponse = entry.getResponse();
+        assertTrue("Transaction response has eTag", entryResponse.hasEtag());
+        assertTrue("Transaction response has Last Modified", entryResponse.hasLastModified());
+        assertTrue("Transaction response has Location", entryResponse.hasLocation());
+        assertTrue("Transaction response has Status", entryResponse.hasStatus());
+        assertEquals("Transaction response eTag matches", String.format("W/\"%s\"", storePat.getMeta().getVersionId()), entryResponse.getEtag());
+        assertEquals("Transaction response Location matches", String.format("%s%s/%s", FhirProofStore.FHIR_STORE_URL, storePat.getResourceType().name(), id), entryResponse.getLocation());
+        assertEquals("Transaction response Status matches", "200 OK", entryResponse.getStatus());
+        assertEquals("Transaction response Last Update matches", storePat.getMeta().getLastUpdated(), entryResponse.getLastModified());
+        assertTrue("updated patient has data", storePat.hasPhoto());
+        assertTrue("Updated data matches", new String(storePat.getPhotoFirstRep().getData()).equals(photo));
+
+    }
+
+    @Test
     public void testEmptyTransaction() throws IOException, FhirProofException {
         Bundle trans = new Bundle().setType(Bundle.BundleType.TRANSACTION);
         trans.setEntry(new ArrayList<>());

@@ -7,6 +7,9 @@ import org.hl7.fhir.r4.model.*;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Search evaluator for token parameters
+ */
 public class TokenEvaluator extends BaseEvaluator {
 
     protected static final String PARAM_TYPE = "token";

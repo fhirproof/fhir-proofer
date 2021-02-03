@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
+/**
+ * Search evaluator for date/time parameters
+ */
 public class DateEvaluator extends BaseEvaluator {
 
     protected static final String PARAM_TYPE = "date";

@@ -15,6 +15,16 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * FhirProofStore is a self contained FHIR store that can be utilized in place of an external FHIR server
+ * or as a slim temporary store. This in-memory store strives to be as compliant with the R4 FHIR specification
+ * as possible. It also offers both access to the underlying data via both the standard FHIR interactions or directly
+ * to the set of <tt>Map</tt> structures.
+ *
+ * It is important to note that the data within this store is volatile and the FhirProofStore should not be used for
+ * any purposes other than the testing or temporary storage of data.
+ *
+ */
 public class FhirProofStore {
     public static final String FHIR_STORE_URL = "https://fhirproof.github.io/fhir-proofer/fhir/";
     private static final FhirContext fhirContext = FhirContext.forR4();
@@ -25,30 +35,62 @@ public class FhirProofStore {
     private final HashMap<String, ISearchEvaluator> evaluators = new HashMap<>();
     private final HashMap<String, IOperationExecutor> executors = new HashMap<>();
 
-    public FhirProofStore() throws IOException {
-        pathEngine = new FHIRPathEngine(new SimpleWorkerContext());
-        pathEngine.setHostServices(new FhirProofEvaluator(this));
-        resetEvaluators();
+    /**
+     * Constructs an empty FHIR store with default functionality.
+     * @throws FhirProofException If the underlying functionality fails to initialize
+     */
+    public FhirProofStore() throws FhirProofException {
+        try {
+            pathEngine = new FHIRPathEngine(new SimpleWorkerContext());
+            pathEngine.setHostServices(new FhirProofEvaluator(this));
+            resetEvaluators();
+        } catch (IOException ioex) {
+            throw new FhirProofException(ioex);
+        }
     }
 
-    public FhirProofStore(FHIRPathEngine.IEvaluationContext hostService) throws IOException {
-        pathEngine = new FHIRPathEngine(new SimpleWorkerContext());
-        pathEngine.setHostServices(hostService);
-        resetEvaluators();
+    /**
+     *
+     * @param hostService A custom implementation of an IEvaluationContext
+     * @throws FhirProofException If the underlying functionality fails to initialize
+     */
+    public FhirProofStore(FHIRPathEngine.IEvaluationContext hostService) throws FhirProofException {
+        try {
+            pathEngine = new FHIRPathEngine(new SimpleWorkerContext());
+            pathEngine.setHostServices(hostService);
+            resetEvaluators();
+        } catch (IOException ioex) {
+            throw new FhirProofException(ioex);
+        }
     }
 
+    /**
+     * The raw <tt>Map</tt> of the FHIR store.
+     * @return The raw <tt>Map</tt> of the FHIR store.
+     */
     public HashMap<String, HashMap<String, Resource>> store() {
         return store;
     }
 
+    /**
+     * Adds a custom search evaluator, or overwrites it if one exists for that parameter type.
+     * @param searchEvaluator Custom implementation of ISearchEvaluator
+     */
     public void addEvaluator(ISearchEvaluator searchEvaluator) {
         evaluators.put(searchEvaluator.getParameterType(), searchEvaluator);
     }
 
+    /**
+     * Adds a custom operation executor, or overwrites it if one exists for the same name.
+     * @param operationExecutor Custom implementation of IOperationExecutor
+     */
     public void addExecutor(IOperationExecutor operationExecutor) {
         executors.put(operationExecutor.getOperationName(), operationExecutor);
     }
 
+    /**
+     * Rests all the search evaluators to the default versions.
+     */
     public void resetEvaluators() {
         evaluators.put(DateEvaluator.PARAM_TYPE, new DateEvaluator(fhirContext));
         evaluators.put(StringEvaluator.PARAM_TYPE, new StringEvaluator(fhirContext));
@@ -57,6 +99,14 @@ public class FhirProofStore {
         evaluators.put(ReferenceEvaluator.PARAM_TYPE, new ReferenceEvaluator(fhirContext));
     }
 
+    /**
+     * Performs a read of a FHIR resource.
+     * @param resource Resource type (e.g. Patient)
+     * @param id ID of the resource to read
+     * @param <T> Resource type being read
+     * @return The resource requested.
+     * @throws FhirProofException Indicating why the read failed.
+     */
     public <T> T read(String resource, String id) throws FhirProofException {
         if (!store.containsKey(resource) || !store.get(resource).containsKey(id)) {
             throw new FhirProofException(String.format("'%s/%s' not found", resource, id));
@@ -64,6 +114,11 @@ public class FhirProofStore {
         return (T) store.get(resource).get(id).copy();
     }
 
+    /**
+     * Creates a FHIR resource in the store.
+     * @param resource The resource to create
+     * @return The ID of the newly created resource.
+     */
     public String create(Resource resource) {
         Resource copy = resource.copy();
         copy.getMeta().setVersionId(Base64.getEncoder().encodeToString(String.valueOf(Instant.now().getEpochSecond()).getBytes()));
@@ -79,6 +134,12 @@ public class FhirProofStore {
         return id;
     }
 
+    /**
+     * Updates the indicated FHIR resource.
+     * @param resource Resource type (e.g. Patient)
+     * @param content The updated version of the resource
+     * @throws FhirProofException Indicating why the update failed.
+     */
     public void update(String resource, String content) throws FhirProofException {
 
         try {
@@ -92,11 +153,24 @@ public class FhirProofStore {
         }
     }
 
+    /**
+     * Updates the indicated FHIR resource.
+     * @param resource Resource type (e.g. Patient)
+     * @param instance The updated version of the resource
+     * @throws FhirProofException Indicating why the update failed.
+     */
     public void update(String resource, Resource instance) throws FhirProofException {
         String id = instance.getIdElement().getIdPart();
         update(resource, id, instance);
     }
 
+    /**
+     * Updates the indicated FHIR resource.
+     * @param resource Resource type (e.g. Patient)
+     * @param id ID of the resource to update
+     * @param instance The updated version of the resource
+     * @throws FhirProofException Indicating why the update failed.
+     */
     public void update(String resource, String id, Resource instance) throws FhirProofException {
         Resource copy = instance.copy();
         copy.getMeta().setVersionId(Base64.getEncoder().encodeToString(String.valueOf(Instant.now().getEpochSecond()).getBytes()));
@@ -107,6 +181,12 @@ public class FhirProofStore {
         store.get(resource).put(id, copy);
     }
 
+    /**
+     * Deletes the indicated FHIR resource from the store.
+     * @param resource Resource type (e.g. Patient)
+     * @param id ID of the resource to delete
+     * @throws FhirProofException Indicating why the delete failed.
+     */
     public void delete(String resource, String id) throws FhirProofException {
         if (!store.containsKey(resource) || !store.get(resource).containsKey(id)) {
             throw new FhirProofException(String.format("%s/%s not found", resource, id));
@@ -114,6 +194,13 @@ public class FhirProofStore {
         store.get(resource).remove(id);
     }
 
+    /**
+     * Performs a search for the matching FHIR resources.
+     * @param resource Resource type (e.g. Patient)
+     * @param query FHIR formatted query string
+     * @return A bundle containing the matching resources
+     * @throws FhirProofException Indicating why the search failed.
+     */
     public Bundle search(String resource, String query) throws FhirProofException {
         try {
 
@@ -244,6 +331,14 @@ public class FhirProofStore {
         }
     }
 
+    /**
+     * Performs a conditional create of a FHIR resource.
+     * @param type Resource type (e.g. Patient)
+     * @param resource The resource to create
+     * @param ifNoneExistsQuery If-None-Exists FHIR query
+     * @return ConditionalCreateResponse with the ID and status code of the request
+     * @throws FhirProofException Indicating why the conditional create failed.
+     */
     public ConditionalCreateResponse conditionalCreate(String type, String resource, String ifNoneExistsQuery) throws FhirProofException {
         try {
             Class clazz = Class.forName("org.hl7.fhir.r4.model." + resource);
@@ -256,6 +351,12 @@ public class FhirProofStore {
         }
     }
 
+    /**
+     * Performs a conditional create of a FHIR resource.
+     * @param resource The resource to create
+     * @param ifNoneExistsQuery If-None-Exists FHIR query
+     * @return ConditionalCreateResponse with the ID and status code of the request
+     */
     public ConditionalCreateResponse conditionalCreate(Resource resource, String ifNoneExistsQuery) {
         try {
             String type = resource.getResourceType().name();
@@ -279,6 +380,20 @@ public class FhirProofStore {
         }
     }
 
+    /**
+     * Executes a FHIR server operation defined for the given path and name.
+     *
+     * Note that the output of this method is dependant on the specific implementation being
+     * invoked. Please consult the documentation for the specific {@link IOperationExecutor}
+     * for the specifics on what type of output is returned.
+     *
+     * @param path Server path of the operation (e.g. Patient/[id])
+     * @param operation Operation name without $ sign (e.g. everything)
+     * @param parameters Any additional input needed for the operation
+     * @param <T> Operation output
+     * @return The result of the operation
+     * @throws FhirProofException Indicating why the operation failed.
+     */
     public <T> T executeOperation(String path, String operation, String parameters)
             throws FhirProofException {
         try {
@@ -293,6 +408,12 @@ public class FhirProofStore {
         }
     }
 
+    /**
+     * Executes a FHIR transaction Bundle against the FHIR store.
+     * @param transaction Input transaction Bundle.
+     * @return A Bundle with the specific results of the transaction
+     * @throws FhirProofException Indicating why the transaction failed.
+     */
     public Bundle executeTransaction(Bundle transaction) throws FhirProofException {
 
         if (!transaction.hasType() || transaction.getType() != Bundle.BundleType.TRANSACTION) {

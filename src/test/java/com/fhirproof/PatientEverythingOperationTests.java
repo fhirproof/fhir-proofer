@@ -15,7 +15,7 @@ public class PatientEverythingOperationTests {
     private static FhirProofStore STORE;
 
     @BeforeClass
-    public static void setup() throws IOException {
+    public static void setup() throws  FhirProofException {
         STORE = TestFhirStore.getFhirStoreCopy();
         STORE.addExecutor(new PatientEverythingExecutor());
     }

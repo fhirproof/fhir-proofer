@@ -2,6 +2,7 @@ package com.fhirproof.resources;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
+import com.fhirproof.FhirProofException;
 import com.fhirproof.FhirProofStore;
 import org.hl7.fhir.r4.model.*;
 
@@ -402,7 +403,7 @@ public class TestFhirStore {
     private TestFhirStore() {
     }
 
-    public static FhirProofStore getFhirStoreCopy() throws IOException {
+    public static FhirProofStore getFhirStoreCopy() throws FhirProofException {
         FhirProofStore newStore = new FhirProofStore();
         for (String resource : STORE.store().keySet()) {
             newStore.store().put(resource, new HashMap<>());

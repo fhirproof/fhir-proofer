@@ -7,6 +7,9 @@ import org.hl7.fhir.r4.model.Base;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Search evaluator for numeric parameters
+ */
 public class NumberEvaluator extends BaseEvaluator {
 
     protected static final String PARAM_TYPE = "number";

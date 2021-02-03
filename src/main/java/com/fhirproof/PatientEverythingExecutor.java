@@ -9,6 +9,9 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * Performs the Patient $everything FHIR operation against the FHIR store.
+ */
 public class PatientEverythingExecutor implements IOperationExecutor<Bundle> {
 
     @Override

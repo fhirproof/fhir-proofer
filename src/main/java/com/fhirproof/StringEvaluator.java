@@ -11,6 +11,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Search evaluator for string parameters
+ */
 public class StringEvaluator extends BaseEvaluator {
 
     protected static final String PARAM_TYPE = "string";
