@@ -5,7 +5,7 @@
 
     <groupId>org.fhirproof</groupId>
     <artifactId>fhir-proofer</artifactId>
-    <version>0.2.0</version>
+    <version>0.3.0-SNAPSHOT</version>
 
     <name>fhir-proofer</name>
     <description>FHIR Proofer aims to provide a simple way to test or proofing out interacting with a FHIR store.</description>
@@ -262,6 +262,6 @@
         <connection>scm:git:https://github.com/fhirproof/fhir-proofer.git</connection>
         <developerConnection>scm:git:git@github.com:fhirproof/fhirproof.git</developerConnection>
         <url>https://github.com/fhirproof/fhir-proofer</url>
-        <tag>fhir-proofer-0.2.0</tag>
+        <tag>fhir-proofer-0.1.0</tag>
     </scm>
 </project>
